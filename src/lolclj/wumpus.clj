@@ -1,5 +1,6 @@
 (ns lolclj.wumpus
-  (:use lolclj.graph))
+  (:use lolclj.graph)
+  (:require clojure.set))
 
 ; Chapter 8, Grand Theft Wumpus
 
@@ -47,3 +48,27 @@
                  (cons n (traverse (concat (map last (direct-edges n edge-list)) ns)
                                    (conj visited n)))))))]
     (traverse [node] #{})))
+
+(defn find-islands
+  "return a (lazy) seq of each 'island' of connected nodes e.g. ((1 2) (3...30))"
+  [nodes edge-list]
+  (letfn [(find-island [nodes]
+            (lazy-seq
+             (let [connected (set (get-connected (first nodes) edge-list))
+                   unconnected (seq (clojure.set/difference (set nodes) connected))]
+               (cons (seq connected)
+                     (if unconnected
+                       (find-island unconnected))))))]
+    (find-island nodes)))
+
+(defn connect-with-bridges
+  "return a sec of the edges needed to connect the islands"
+  [islands]
+  (when (next islands)
+    (concat (edge-pair (ffirst islands) (ffirst (next islands)))
+            (connect-with-bridges (next islands)))))
+
+(defn connect-all-islands
+  "return an updated edge-list with all islands connected"
+  [nodes edge-list]
+  (concat (connect-with-bridges (find-islands nodes edge-list)) edge-list))
