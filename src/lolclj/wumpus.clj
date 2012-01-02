@@ -54,9 +54,9 @@
   [nodes edge-list]
   (letfn [(find-island [nodes]
             (lazy-seq
-             (let [connected (set (get-connected (first nodes) edge-list))
-                   unconnected (seq (clojure.set/difference (set nodes) connected))]
-               (cons (seq connected)
+             (let [connected (get-connected (first nodes) edge-list)
+                   unconnected (seq (clojure.set/difference (set nodes) (set connected)))]
+               (cons connected
                      (if unconnected
                        (find-island unconnected))))))]
     (find-island nodes)))
